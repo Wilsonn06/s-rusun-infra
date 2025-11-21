@@ -1,1 +1,15 @@
 
+apiVersion: v1
+kind: Service
+metadata:
+  name: s-rusun-adm
+  labels:
+    app: s-rusun-adm
+spec:
+  type: ClusterIP
+  selector:
+    app: s-rusun-adm
+  ports:
+    - port: 3001
+      targetPort: 3001
+      protocol: TCP
