@@ -1,1 +1,22 @@
 
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: s-rusun-adm
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/<your-username>/s-rusun-infra
+    targetRevision: HEAD
+    path: base/s-rusun-adm
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: rusun
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
