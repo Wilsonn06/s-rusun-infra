@@ -21,6 +21,6 @@ spec:
             - containerPort: 3002
           imagePullPolicy: Always
           env:
-            - name: NODE_ENV
-              value: "production"
-
+            # URL ADM di dalam Kubernetes Cluster
+            - name: ADMIN_URL
+              value: "http://s-rusun-adm:3001"
