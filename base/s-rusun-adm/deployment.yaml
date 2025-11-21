@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: s-rusun-adm
-        image: wilsonnn06/s-rusun-addm:latest   # ← image DockerHub Anda
+        image: wilsonnn06/s-rusun-adm:latest   # ← sudah benar sekarang
         imagePullPolicy: Always
         ports:
         - containerPort: 3001
