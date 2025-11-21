@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: s-rusun-adm
-        image: wilsonnn06/s-rusun-adm:latest   # ← sudah benar sekarang
+        image: wilsonnn06/s-rusun-adm:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 3001
