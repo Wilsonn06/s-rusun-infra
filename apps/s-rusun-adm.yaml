@@ -8,7 +8,7 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/Wilsonn06/s-rusun-infra
+    repoURL: https://github.com/wilsonn06/s-rusun-infra
     targetRevision: HEAD
     path: base/s-rusun-adm
 
