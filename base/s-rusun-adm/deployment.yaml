@@ -1,4 +1,0 @@
-containers:
-- name: s-rusun-adm
-  image: s-rusun-adm:latest
-  imagePullPolicy: IfNotPresent
