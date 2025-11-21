@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kong
+  namespace: kong
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kong
+  template:
+    metadata:
+      labels:
+        app: kong
+    spec:
+      containers:
+      - name: kong
+        image: kong/kong-gateway:3.12.0.0
+        env:
+          - name: KONG_DATABASE
+            value: "postgres"
+          - name: KONG_PG_HOST
+            value: "kong-postgres"
+          - name: KONG_PG_USER
+            value: "kong"
+          - name: KONG_PG_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: kong-secrets
+                key: KONG_PG_PASSWORD
+          - name: KONG_PG_DATABASE
+            value: "kong"
+          - name: KONG_LICENSE_DATA
+            valueFrom:
+              secretKeyRef:
+                name: kong-secrets
+                key: KONG_LICENSE_DATA
+          - name: KONG_ADMIN_LISTEN
+            value: "0.0.0.0:8001, 0.0.0.0:8444 ssl"
+          - name: KONG_ADMIN_GUI_LISTEN
+            value: "0.0.0.0:8002"
+          - name: KONG_PROXY_LISTEN
+            value: "0.0.0.0:8000, 0.0.0.0:8443 ssl"
+        ports:
+          - containerPort: 8000   # proxy http
+          - containerPort: 8443   # proxy https
+          - containerPort: 8001   # admin api
+          - containerPort: 8002   # admin GUI
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: 8001
+          initialDelaySeconds: 10
+          periodSeconds: 10
