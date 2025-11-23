@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s-rusun-app
+  labels:
+    app: s-rusun-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: s-rusun-app
+  template:
+    metadata:
+      labels:
+        app: s-rusun-app
+    spec:
+      containers:
+        - name: s-rusun-app
+          image: asia-southeast2-docker.pkg.dev/steady-cascade-479108-s5/rusun-repo/s-rusun-app:latest
+          ports:
+            - containerPort: 3002
+          imagePullPolicy: Always
