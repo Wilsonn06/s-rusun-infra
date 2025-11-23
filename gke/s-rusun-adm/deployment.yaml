@@ -17,7 +17,7 @@ spec:
       containers:
         - name: s-rusun-adm
           # image akan di-overwrite oleh GitHub Actions
-          image: asia-southeast2-docker.pkg.dev/steady-cascade-479108-s5/rusun-repo/s-rusun-adm:latest
+          image: asia-southeast2-docker.pkg.dev/steady-cascade-479108-s5/rusun-repo/s-rusun-adm:<sha>
           ports:
             - containerPort: 3001
           imagePullPolicy: Always
