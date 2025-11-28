@@ -1,4 +1,3 @@
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -21,3 +20,11 @@ spec:
           ports:
             - containerPort: 80
           imagePullPolicy: Always
+          volumeMounts:
+            - name: env-config
+              mountPath: /usr/share/nginx/html/env.js
+              subPath: env.js
+      volumes:
+        - name: env-config
+          configMap:
+            name: s-rusun-ui-config
