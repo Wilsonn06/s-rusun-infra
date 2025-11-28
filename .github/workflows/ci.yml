@@ -1,73 +1,73 @@
-name: CD - Deploy to On-Prem & GKE
+# name: CD - Deploy to On-Prem & GKE
 
-on:
-  repository_dispatch:
-    types: [image-update, image-update-gke]
+# on:
+#   repository_dispatch:
+#     types: [image-update, image-update-gke]
 
-jobs:
-  update-manifests:
-    runs-on: ubuntu-latest
+# jobs:
+#   update-manifests:
+#     runs-on: ubuntu-latest
 
-    steps:
-    - name: Checkout infra repository
-      uses: actions/checkout@v3
+#     steps:
+#     - name: Checkout infra repository
+#       uses: actions/checkout@v3
 
-    - name: Update deployment image
-      run: |
-        SERVICE="${{ github.event.client_payload.service }}"
-        IMAGE="${{ github.event.client_payload.image }}"
+#     - name: Update deployment image
+#       run: |
+#         SERVICE="${{ github.event.client_payload.service }}"
+#         IMAGE="${{ github.event.client_payload.image }}"
 
-        echo "SERVICE = $SERVICE"
-        echo "IMAGE   = $IMAGE"
+#         echo "SERVICE = $SERVICE"
+#         echo "IMAGE   = $IMAGE"
 
-        DEPLOYMENT_FILE="k8s/${SERVICE}/deployment.yaml"
+#         DEPLOYMENT_FILE="k8s/${SERVICE}/deployment.yaml"
 
-        echo "Updating image in $DEPLOYMENT_FILE"
+#         echo "Updating image in $DEPLOYMENT_FILE"
 
-        # update baris 'image:' lalu ganti dengan image baru
-        sed -i "s|image: .*|image: ${IMAGE}|g" "$DEPLOYMENT_FILE"
+#         # update baris 'image:' lalu ganti dengan image baru
+#         sed -i "s|image: .*|image: ${IMAGE}|g" "$DEPLOYMENT_FILE"
 
-    - name: Commit updated manifests
-      run: |
-        git config user.name "github-actions"
-        git config user.email "github-actions@github.com"
-        git commit -am "Update image for $SERVICE → $IMAGE" || echo "No changes to commit"
-        git push
+#     - name: Commit updated manifests
+#       run: |
+#         git config user.name "github-actions"
+#         git config user.email "github-actions@github.com"
+#         git commit -am "Update image for $SERVICE → $IMAGE" || echo "No changes to commit"
+#         git push
 
-  deploy-onprem:
-    needs: update-manifests
-    runs-on: ubuntu-latest
-    if: github.event.action == 'image-update'
+#   deploy-onprem:
+#     needs: update-manifests
+#     runs-on: ubuntu-latest
+#     if: github.event.action == 'image-update'
 
-    steps:
-    - name: Configure Kubeconfig for on-prem
-      run: |
-        mkdir -p ~/.kube
-        echo "${{ secrets.KUBECONFIG_ONPREM }}" > ~/.kube/config
+#     steps:
+#     - name: Configure Kubeconfig for on-prem
+#       run: |
+#         mkdir -p ~/.kube
+#         echo "${{ secrets.KUBECONFIG_ONPREM }}" > ~/.kube/config
 
-    - name: Apply manifests to On-Prem Cluster
-      run: |
-        kubectl apply -f k8s/s-rusun-adm/
+#     - name: Apply manifests to On-Prem Cluster
+#       run: |
+#         kubectl apply -f k8s/s-rusun-adm/
 
-  deploy-gke:
-    needs: update-manifests
-    runs-on: ubuntu-latest
-    if: github.event.action == 'image-update-gke'
+#   deploy-gke:
+#     needs: update-manifests
+#     runs-on: ubuntu-latest
+#     if: github.event.action == 'image-update-gke'
 
-    steps:
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
+#     steps:
+#     - name: Authenticate to Google Cloud
+#       uses: google-github-actions/auth@v2
+#       with:
+#         credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-    - name: Setup GKE Credentials
-      uses: google-github-actions/get-gke-credentials@v2
-      with:
-        cluster_name: ${{ secrets.GKE_CLUSTER }}
-        location: ${{ secrets.GKE_LOCATION }}
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
+#     - name: Setup GKE Credentials
+#       uses: google-github-actions/get-gke-credentials@v2
+#       with:
+#         cluster_name: ${{ secrets.GKE_CLUSTER }}
+#         location: ${{ secrets.GKE_LOCATION }}
+#         project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-    - name: Apply manifests to GKE Cluster
-      run: |
-        kubectl apply -f k8s/s-rusun-adm/
+#     - name: Apply manifests to GKE Cluster
+#       run: |
+#         kubectl apply -f k8s/s-rusun-adm/
 
