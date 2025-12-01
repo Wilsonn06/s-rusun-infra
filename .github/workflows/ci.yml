@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Checkout infra repository
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.REPO_PAT_INFRA }}
 
       - name: Update deployment image
         run: |
@@ -24,7 +26,6 @@ jobs:
 
           echo "Updating image in $DEPLOYMENT_FILE"
 
-          # ganti baris 'image: ...' dengan image baru
           sed -i "s|image: .*|image: ${IMAGE}|g" "$DEPLOYMENT_FILE"
 
       - name: Commit updated manifests
