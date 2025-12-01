@@ -16,11 +16,10 @@ spec:
     spec:
       containers:
         - name: s-rusun-app
-          image: ghcr.io/wilsonn06/s-rusun-app:latest
+          image: ghcr.io/wilsonn06/s-rusun-app:sha-initial 
           ports:
             - containerPort: 3002
           imagePullPolicy: Always
           env:
-            # URL ADM di dalam Kubernetes Cluster
             - name: ADMIN_URL
               value: "http://s-rusun-adm:3001"
