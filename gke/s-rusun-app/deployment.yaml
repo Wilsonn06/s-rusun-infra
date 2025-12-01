@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: s-rusun-app
-          image: asia-southeast2-docker.pkg.dev/steady-cascade-479108-s5/rusun-repo/s-rusun-app:latest
+          image: asia-southeast2-docker.pkg.dev/steady-cascade-479108-s5/rusun-repo/s-rusun-app:sha-733c45b
           ports:
             - containerPort: 3002
           imagePullPolicy: Always
