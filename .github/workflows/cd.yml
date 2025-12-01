@@ -92,6 +92,17 @@ jobs:
     steps:
       - name: Checkout infra repository
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.REPO_PAT_INFRA }}
+          fetch-depth: 0
+
+      - name: Pull latest main from origin
+        run: |
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
+          echo "Current commit after sync:"
+          git log -1 --oneline
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
