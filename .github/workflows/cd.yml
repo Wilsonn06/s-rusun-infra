@@ -5,8 +5,10 @@ on:
     types: [image-update, image-update-gke]
 
 jobs:
-  update-manifests:
+  # ⬇️ Job khusus on-prem: hanya untuk event image-update
+  update-manifests-onprem:
     runs-on: ubuntu-latest
+    if: github.event.action == 'image-update'
 
     steps:
       - name: Checkout infra repository
@@ -14,21 +16,21 @@ jobs:
         with:
           token: ${{ secrets.REPO_PAT_INFRA }}
 
-      - name: Update deployment image
+      - name: Update deployment image for On-Prem
         run: |
           SERVICE="${{ github.event.client_payload.service }}"
           IMAGE="${{ github.event.client_payload.image }}"
 
-          echo "SERVICE = $SERVICE"
-          echo "IMAGE   = $IMAGE"
+          echo "ON-PREM | SERVICE = $SERVICE"
+          echo "ON-PREM | IMAGE   = $IMAGE"
 
           DEPLOYMENT_FILE="k8s/${SERVICE}/deployment.yaml"
 
-          echo "Updating image in $DEPLOYMENT_FILE"
+          echo "Updating image in $DEPLOYMENT_FILE (On-Prem)"
 
           sed -i "s|image: .*|image: ${IMAGE}|g" "$DEPLOYMENT_FILE"
 
-      - name: Commit updated manifests
+      - name: Commit updated manifests (On-Prem)
         run: |
           SERVICE="${{ github.event.client_payload.service }}"
           IMAGE="${{ github.event.client_payload.image }}"
@@ -36,34 +38,54 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add "k8s/${SERVICE}/deployment.yaml"
-          git commit -m "Update image for $SERVICE → $IMAGE" || echo "No changes to commit"
+          git commit -m "Update on-prem image for $SERVICE → $IMAGE" || echo "No changes to commit"
           git push
 
-  # ❌ On-prem deploy di-nonaktifkan karena cluster Docker Desktop
-  #    tidak bisa diakses dari GitHub Actions.
-  #    Sync ke cluster kamu lakukan manual dari laptop dengan:
-  #    kubectl apply -f k8s/<service>/
+  # ❌ Deploy on-prem tetap dimatikan (manual apply dari laptop)
   # deploy-onprem:
-  #   needs: update-manifests
+  #   needs: update-manifests-onprem
   #   runs-on: ubuntu-latest
   #   if: github.event.action == 'image-update'
-  #
-  #   steps:
-  #     - name: Checkout infra repository
-  #       uses: actions/checkout@v3
-  #
-  #     - name: Configure Kubeconfig for on-prem
-  #       run: |
-  #         mkdir -p ~/.kube
-  #         echo "${{ secrets.KUBECONFIG_ONPREM }}" > ~/.kube/config
-  #
-  #     - name: Apply manifests to On-Prem Cluster
-  #       run: |
-  #         SERVICE="${{ github.event.client_payload.service }}"
-  #         kubectl apply -f "k8s/$SERVICE/"
+  #   steps: ...
+
+  # ⬇️ Job khusus GKE: hanya untuk event image-update-gke
+  update-manifests-gke:
+    runs-on: ubuntu-latest
+    if: github.event.action == 'image-update-gke'
+
+    steps:
+      - name: Checkout infra repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.REPO_PAT_INFRA }}
+
+      - name: Update deployment image for GKE
+        run: |
+          SERVICE="${{ github.event.client_payload.service }}"
+          IMAGE="${{ github.event.client_payload.image }}"
+
+          echo "GKE | SERVICE = $SERVICE"
+          echo "GKE | IMAGE   = $IMAGE"
+
+          DEPLOYMENT_FILE="gke/${SERVICE}/deployment.yaml"
+
+          echo "Updating image in $DEPLOYMENT_FILE (GKE)"
+
+          sed -i "s|image: .*|image: ${IMAGE}|g" "$DEPLOYMENT_FILE"
+
+      - name: Commit updated manifests (GKE)
+        run: |
+          SERVICE="${{ github.event.client_payload.service }}"
+          IMAGE="${{ github.event.client_payload.image }}"
+
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add "gke/${SERVICE}/deployment.yaml"
+          git commit -m "Update GKE image for $SERVICE → $IMAGE" || echo "No changes to commit"
+          git push
 
   deploy-gke:
-    needs: update-manifests
+    needs: update-manifests-gke
     runs-on: ubuntu-latest
     if: github.event.action == 'image-update-gke'
 
