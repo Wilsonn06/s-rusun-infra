@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: s-rusun-ui
-          image: asia-southeast2-docker.pkg.dev/steady-cascade-479108-s5/rusun-repo/s-rusun-ui:sha-999f9f8
+          image: asia-southeast2-docker.pkg.dev/steady-cascade-479108-s5/rusun-repo/s-rusun-ui:sha-2df6dd0
           ports:
             - containerPort: 80
           imagePullPolicy: Always
