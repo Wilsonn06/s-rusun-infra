@@ -1,11 +1,10 @@
-name: CD - Deploy to On-Prem & GKE
+name: CD - Deploy to On-Prem
 
 on:
   repository_dispatch:
-    types: [image-update, image-update-gke]
+    types: [image-update]
 
 jobs:
-  # ⬇️ Job khusus on-prem: hanya untuk event image-update
   update-manifests-onprem:
     runs-on: ubuntu-latest
     if: github.event.action == 'image-update'
@@ -40,83 +39,3 @@ jobs:
           git add "k8s/${SERVICE}/deployment.yaml"
           git commit -m "Update on-prem image for $SERVICE → $IMAGE" || echo "No changes to commit"
           git push
-
-  # ❌ Deploy on-prem tetap dimatikan (manual apply dari laptop)
-  # deploy-onprem:
-  #   needs: update-manifests-onprem
-  #   runs-on: ubuntu-latest
-  #   if: github.event.action == 'image-update'
-  #   steps: ...
-
-  # ⬇️ Job khusus GKE: hanya untuk event image-update-gke
-  update-manifests-gke:
-    runs-on: ubuntu-latest
-    if: github.event.action == 'image-update-gke'
-
-    steps:
-      - name: Checkout infra repository
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.REPO_PAT_INFRA }}
-
-      - name: Update deployment image for GKE
-        run: |
-          SERVICE="${{ github.event.client_payload.service }}"
-          IMAGE="${{ github.event.client_payload.image }}"
-
-          echo "GKE | SERVICE = $SERVICE"
-          echo "GKE | IMAGE   = $IMAGE"
-
-          DEPLOYMENT_FILE="gke/${SERVICE}/deployment.yaml"
-
-          echo "Updating image in $DEPLOYMENT_FILE (GKE)"
-
-          sed -i "s|image: .*|image: ${IMAGE}|g" "$DEPLOYMENT_FILE"
-
-      - name: Commit updated manifests (GKE)
-        run: |
-          SERVICE="${{ github.event.client_payload.service }}"
-          IMAGE="${{ github.event.client_payload.image }}"
-
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add "gke/${SERVICE}/deployment.yaml"
-          git commit -m "Update GKE image for $SERVICE → $IMAGE" || echo "No changes to commit"
-          git push
-
-  deploy-gke:
-    needs: update-manifests-gke
-    runs-on: ubuntu-latest
-    if: github.event.action == 'image-update-gke'
-
-    steps:
-      - name: Checkout infra repository
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.REPO_PAT_INFRA }}
-          fetch-depth: 0
-
-      - name: Pull latest main from origin
-        run: |
-          git fetch origin main
-          git checkout main
-          git reset --hard origin/main
-          echo "Current commit after sync:"
-          git log -1 --oneline
-
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
-
-      - name: Setup GKE Credentials
-        uses: google-github-actions/get-gke-credentials@v2
-        with:
-          cluster_name: ${{ secrets.GKE_CLUSTER }}
-          location: ${{ secrets.GKE_LOCATION }}
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-
-      - name: Apply manifests to GKE Cluster
-        run: |
-          SERVICE="${{ github.event.client_payload.service }}"
-          kubectl apply -f "gke/$SERVICE/"
