@@ -1,4 +1,3 @@
-# s-rusun-infra/k8s/local/s-rusun-adm/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
