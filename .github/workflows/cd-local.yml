@@ -33,7 +33,7 @@ jobs:
         run: |
           SERVICE="${SERVICE}"
           IMAGE="${IMAGE}"
-          BASE_DIR="k8s/local/${SERVICE}"
+          BASE_DIR="local/${SERVICE}"
 
           echo "Rendering manifests for service=$SERVICE image=$IMAGE in $BASE_DIR"
 
