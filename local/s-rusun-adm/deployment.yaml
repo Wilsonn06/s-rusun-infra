@@ -1,0 +1,23 @@
+# s-rusun-infra/k8s/local/s-rusun-adm/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s-rusun-adm
+  labels:
+    app: s-rusun-adm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: s-rusun-adm
+  template:
+    metadata:
+      labels:
+        app: s-rusun-adm
+    spec:
+      containers:
+        - name: s-rusun-adm
+          image: IMAGE_PLACEHOLDER
+          ports:
+            - containerPort: 3001
+          imagePullPolicy: Always
