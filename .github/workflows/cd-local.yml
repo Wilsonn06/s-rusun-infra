@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy-local:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted   # <- GANTI dari ubuntu-latest ke self-hosted
 
     steps:
       - name: Extract payload
@@ -19,15 +19,11 @@ jobs:
         with:
           token: ${{ secrets.REPO_PAT_INFRA }}
 
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v4
-        with:
-          version: 'v1.31.0'
-
-      - name: Configure kubeconfig for local cluster
+      - name: Show context
         run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBE_CONFIG_LOCAL }}" > $HOME/.kube/config
+          echo "Service: ${SERVICE}"
+          echo "Image:   ${IMAGE}"
+          kubectl config current-context || echo "No kubeconfig?"
 
       - name: Render deployment manifest with new image
         run: |
@@ -36,6 +32,8 @@ jobs:
           BASE_DIR="local/${SERVICE}"
 
           echo "Rendering manifests for service=$SERVICE image=$IMAGE in $BASE_DIR"
+
+          mkdir -p "${BASE_DIR}"
 
           sed "s|IMAGE_PLACEHOLDER|${IMAGE}|g" \
             "${BASE_DIR}/deployment.yaml" > "${BASE_DIR}/deployment.rendered.yaml"
@@ -51,3 +49,8 @@ jobs:
       - name: Wait for rollout to complete
         run: |
           kubectl rollout status deployment/s-rusun-adm --timeout=180s
+
+      - name: Show pods and service
+        run: |
+          kubectl get pods -o wide
+          kubectl get svc s-rusun-adm -o wide
