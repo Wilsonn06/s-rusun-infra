@@ -1,0 +1,53 @@
+name: CD - Deploy to Local Cluster (slave6/8/9)
+
+on:
+  repository_dispatch:
+    types: [image-update-local]
+
+jobs:
+  deploy-local:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Extract payload
+        run: |
+          echo "SERVICE=${{ github.event.client_payload.service }}" >> $GITHUB_ENV
+          echo "IMAGE=${{ github.event.client_payload.image }}" >> $GITHUB_ENV
+
+      - name: Checkout infra repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.REPO_PAT_INFRA }}
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'v1.31.0'
+
+      - name: Configure kubeconfig for local cluster
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_LOCAL }}" > $HOME/.kube/config
+
+      - name: Render deployment manifest with new image
+        run: |
+          SERVICE="${SERVICE}"
+          IMAGE="${IMAGE}"
+          BASE_DIR="k8s/local/${SERVICE}"
+
+          echo "Rendering manifests for service=$SERVICE image=$IMAGE in $BASE_DIR"
+
+          sed "s|IMAGE_PLACEHOLDER|${IMAGE}|g" \
+            "${BASE_DIR}/deployment.yaml" > "${BASE_DIR}/deployment.rendered.yaml"
+
+      - name: Apply manifests to local cluster
+        run: |
+          SERVICE="${SERVICE}"
+          BASE_DIR="k8s/local/${SERVICE}"
+
+          kubectl apply -f "${BASE_DIR}/deployment.rendered.yaml"
+          kubectl apply -f "${BASE_DIR}/service.yaml"
+
+      - name: Wait for rollout to complete
+        run: |
+          kubectl rollout status deployment/s-rusun-adm --timeout=180s
