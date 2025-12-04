@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s-rusun-ui
+  labels:
+    app: s-rusun-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: s-rusun-ui
+  template:
+    metadata:
+      labels:
+        app: s-rusun-ui
+    spec:
+      containers:
+        - name: s-rusun-ui
+          image: IMAGE_PLACEHOLDER
+          ports:
+            - containerPort: 80
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: env-config
+              mountPath: /usr/share/nginx/html/env.js
+              subPath: env.js
+      volumes:
+        - name: env-config
+          configMap:
+            name: s-rusun-ui-config
