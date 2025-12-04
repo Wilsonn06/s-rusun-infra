@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: s-rusun-adm
-          image: ghcr.io/wilsonn06/s-rusun-adm:sha-ce22702
+          image: ghcr.io/wilsonn06/s-rusun-adm:sha-3758747
           ports:
             - containerPort: 3001
           imagePullPolicy: Always
