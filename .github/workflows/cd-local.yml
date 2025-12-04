@@ -43,7 +43,7 @@ jobs:
       - name: Apply manifests to local cluster
         run: |
           SERVICE="${SERVICE}"
-          BASE_DIR="k8s/local/${SERVICE}"
+          BASE_DIR="local/${SERVICE}"
 
           kubectl apply -f "${BASE_DIR}/deployment.rendered.yaml"
           kubectl apply -f "${BASE_DIR}/service.yaml"
