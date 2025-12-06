@@ -2,8 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: s-rusun-adm
-  labels:
-    app: s-rusun-adm
 spec:
   replicas: 1
   selector:
@@ -20,3 +18,10 @@ spec:
           ports:
             - containerPort: 3001
           imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: "300m"
+              memory: "300Mi"
+            limits:
+              cpu: "500m"
+              memory: "500Mi"
