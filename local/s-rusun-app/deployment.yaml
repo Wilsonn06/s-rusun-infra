@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: s-rusun-app
-          image: ghcr.io/wilsonn06/s-rusun-app:sha-244dcc1
+          image: ghcr.io/wilsonn06/s-rusun-app:sha-2bbf6fe
           ports:
             - containerPort: 3002
           imagePullPolicy: Always
