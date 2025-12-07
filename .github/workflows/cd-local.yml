@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy-local:
-    runs-on: self-hosted   # <- GANTI dari ubuntu-latest ke self-hosted
+    runs-on: self-hosted
 
     steps:
       - name: Extract payload
@@ -25,32 +25,36 @@ jobs:
           echo "Image:   ${IMAGE}"
           kubectl config current-context || echo "No kubeconfig?"
 
-      - name: Render deployment manifest with new image
+      - name: Update deployment image
         run: |
           SERVICE="${SERVICE}"
           IMAGE="${IMAGE}"
-          BASE_DIR="local/${SERVICE}"
+          DEPLOYMENT_FILE="local/${SERVICE}/deployment.yaml"
 
-          echo "Rendering manifests for service=$SERVICE image=$IMAGE in $BASE_DIR"
+          echo "Updating image tag in $DEPLOYMENT_FILE"
+          
+          # Replace baris image: ...
+          sed -i "s|image: .*|image: ${IMAGE}|g" "$DEPLOYMENT_FILE"
 
-          mkdir -p "${BASE_DIR}"
-
-          sed "s|IMAGE_PLACEHOLDER|${IMAGE}|g" \
-            "${BASE_DIR}/deployment.yaml" > "${BASE_DIR}/deployment.rendered.yaml"
+          echo "--- Deployment file updated ---"
+          cat "$DEPLOYMENT_FILE"
 
       - name: Apply manifests to local cluster
         run: |
           SERVICE="${SERVICE}"
           BASE_DIR="local/${SERVICE}"
 
-          kubectl apply -f "${BASE_DIR}/deployment.rendered.yaml"
+          kubectl apply -f "${BASE_DIR}/deployment.yaml"
           kubectl apply -f "${BASE_DIR}/service.yaml"
 
       - name: Wait for rollout to complete
         run: |
-          kubectl rollout status deployment/s-rusun-adm --timeout=180s
+          SERVICE="${SERVICE}"
+          echo "Waiting rollout for deployment/${SERVICE}"
+          kubectl rollout status deployment/${SERVICE} --timeout=180s
 
       - name: Show pods and service
         run: |
           kubectl get pods -o wide
-          kubectl get svc s-rusun-adm -o wide
+          SERVICE="${SERVICE}"
+          kubectl get svc ${SERVICE} -o wide || true
