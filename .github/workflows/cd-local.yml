@@ -32,12 +32,18 @@ jobs:
           DEPLOYMENT_FILE="local/${SERVICE}/deployment.yaml"
 
           echo "Updating image in $DEPLOYMENT_FILE (Local)"
-
-          # Replace baris image: ...
           sed -i "s|image: .*|image: ${IMAGE}|g" "$DEPLOYMENT_FILE"
 
           echo "--- Updated deployment.yaml ---"
           cat "$DEPLOYMENT_FILE"
+
+      - name: Sync with remote main
+        run: |
+          echo "Syncing with remote main..."
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
+          git pull --rebase
 
       - name: Commit updated manifests (Local)
         run: |
@@ -46,9 +52,11 @@ jobs:
 
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
+
           git add "local/${SERVICE}/deployment.yaml"
           git commit -m "Update LOCAL image for $SERVICE → $IMAGE" || echo "No changes to commit"
-          git push
+
+          git push origin main
 
       - name: Apply manifests to local cluster
         run: |
