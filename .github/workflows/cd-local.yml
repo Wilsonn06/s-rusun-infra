@@ -5,7 +5,7 @@ on:
     types: [image-update-local]
 
 jobs:
-  deploy-local:
+  update-manifests-local:
     runs-on: self-hosted
 
     steps:
@@ -21,23 +21,34 @@ jobs:
 
       - name: Show context
         run: |
-          echo "Service: ${SERVICE}"
-          echo "Image:   ${IMAGE}"
+          echo "LOCAL | SERVICE = ${SERVICE}"
+          echo "LOCAL | IMAGE   = ${IMAGE}"
           kubectl config current-context || echo "No kubeconfig?"
 
-      - name: Update deployment image
+      - name: Update deployment image for LOCAL
         run: |
           SERVICE="${SERVICE}"
           IMAGE="${IMAGE}"
           DEPLOYMENT_FILE="local/${SERVICE}/deployment.yaml"
 
-          echo "Updating image tag in $DEPLOYMENT_FILE"
-          
+          echo "Updating image in $DEPLOYMENT_FILE (Local)"
+
           # Replace baris image: ...
           sed -i "s|image: .*|image: ${IMAGE}|g" "$DEPLOYMENT_FILE"
 
-          echo "--- Deployment file updated ---"
+          echo "--- Updated deployment.yaml ---"
           cat "$DEPLOYMENT_FILE"
+
+      - name: Commit updated manifests (Local)
+        run: |
+          SERVICE="${SERVICE}"
+          IMAGE="${IMAGE}"
+
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add "local/${SERVICE}/deployment.yaml"
+          git commit -m "Update LOCAL image for $SERVICE → $IMAGE" || echo "No changes to commit"
+          git push
 
       - name: Apply manifests to local cluster
         run: |
