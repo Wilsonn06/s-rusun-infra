@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: s-rusun-ui
-          image: ghcr.io/wilsonn06/s-rusun-ui:sha-749bbc5
+          image: ghcr.io/wilsonn06/s-rusun-ui:sha-e9f851b
           ports:
             - containerPort: 80
           imagePullPolicy: Always
