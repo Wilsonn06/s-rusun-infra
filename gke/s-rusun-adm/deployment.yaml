@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: s-rusun-adm
-          image: asia-southeast2-docker.pkg.dev/steady-cascade-479108-s5/rusun-repo/s-rusun-adm:sha-ea1f3e5
+          image: asia-southeast2-docker.pkg.dev/steady-cascade-479108-s5/rusun-repo/s-rusun-adm:sha-3f9fe4e
           ports:
             - containerPort: 3001
           imagePullPolicy: Always
